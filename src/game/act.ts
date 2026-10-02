@@ -225,6 +225,18 @@ export class Act implements Scene, PlayerWorld {
     this.terrain?.invalidate(x, y, w, h);
   }
 
+  /** Debug/test helper: teleport the leader to x, standing on the ground (searching down from y). */
+  warp(x: number, fromY = 0): void {
+    const p = this.leader;
+    let y = fromY;
+    while (y < this.level.height && !this.col.solid(Math.floor(x), y, 0, true)) y++;
+    p.x = x;
+    p.y = y - p.hr - 1;
+    p.xsp = p.ysp = p.gsp = 0;
+    p.grounded = false;
+    this.camera.snap(p);
+  }
+
   /** Casts against level collision on path A (objects mostly need simple floor checks). */
   floorDist(x: number, y: number, d: Dir): number {
     return this.col.dist(x, y, d, 0, true);
@@ -284,9 +296,11 @@ export class Act implements Scene, PlayerWorld {
   private updateResults(): void {
     const r = this.results!;
     if (this.stateTimer < 120) return;
-    if (this.stateTimer % 2 === 0 && (r.timeBonus > 0 || r.ringBonus > 0)) {
-      const t = Math.min(100, r.timeBonus),
-        g = Math.min(100, r.ringBonus);
+    if (r.timeBonus > 0 || r.ringBonus > 0) {
+      // Pressing a button finishes the tally at once.
+      const fast = this.game.pad.isPressed(Btn.Start | Btn.A | Btn.B | Btn.C);
+      const t = fast ? r.timeBonus : Math.min(200, r.timeBonus),
+        g = fast ? r.ringBonus : Math.min(200, r.ringBonus);
       r.timeBonus -= t;
       r.ringBonus -= g;
       r.total += t + g;
@@ -361,7 +375,7 @@ export class Act implements Scene, PlayerWorld {
     const thh = p.instaShield > 0 ? 24 : p.hr - 3;
     for (const o of this.objects) {
       if (o.dead) continue;
-      if (o.solid) this.solidCollide(p, o, o.solid);
+      if (o.solid && (!o.solidFor || o.solidFor(p, this))) this.solidCollide(p, o, o.solid);
       if (p.dead) return;
       if (o.touch && o.hw > 0 && Math.abs(p.x - o.x) < thw + o.hw && Math.abs(p.y - o.y) < thh + o.hh) {
         o.touch(this, p);

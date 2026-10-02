@@ -6,7 +6,10 @@ import { spawn } from 'node:child_process';
 const [query = '', out = '/tmp/claude-0/shots/shot', script = '[]'] = process.argv.slice(2);
 const steps = JSON.parse(script); // [{wait: ms}, {down: 'ArrowRight'}, {up: 'ArrowRight'}, {shot: 'name'}, {eval: 'js'}]
 
-const server = spawn('npx', ['vite', 'preview', '--port', '4173', '--strictPort'], { stdio: 'pipe' });
+const server = spawn('npx', ['vite', 'preview', '--port', '4173', '--strictPort'], {
+  stdio: 'pipe',
+  detached: true,
+});
 await new Promise((res) => server.stdout.on('data', (d) => d.toString().includes('4173') && res()));
 const browser = await chromium.launch({
   executablePath: process.env.CHROMIUM_PATH || '/opt/pw-browsers/chromium',
@@ -28,5 +31,5 @@ for (const s of steps) {
 }
 console.log(errors.length ? 'ERRORS:\n' + errors.join('\n') : 'no errors');
 await browser.close();
-server.kill();
+process.kill(-server.pid, 'SIGTERM');
 process.exit(0);

@@ -276,6 +276,14 @@ export class LevelBuilder {
     return this;
   }
 
+  /**
+   * Place an object resting on the ground at x: its centre is put `lift` px above
+   * the first solid pixel found scanning down from `fromY`.
+   */
+  onGround(type: string, x: number, lift: number, props: Record<string, unknown> = {}, fromY = 0): this {
+    return this.place(type, x, this.groundY(x, fromY) - lift, props);
+  }
+
   /** A line of `n` rings starting at (x, y), spaced by (dx, dy). */
   rings(x: number, y: number, n: number, dx = 24, dy = 0): this {
     for (let i = 0; i < n; i++) this.place('ring', x + i * dx, y + i * dy);

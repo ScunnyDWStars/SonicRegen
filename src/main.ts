@@ -3,11 +3,10 @@ import { SCREEN_H, SCREEN_W } from './engine/constants';
 import { InputManager } from './engine/input';
 import { GameLoop } from './engine/loop';
 import { Renderer } from './engine/renderer';
-import { Act } from './game/act';
+import { startAct } from './game/flow';
 import { Game } from './game/game';
-import { SONIC } from './player/sonic';
 import { TEST_ZONE } from './zones/test-room';
-import './objects/rings';
+import './objects';
 
 const canvas = document.getElementById('screen') as HTMLCanvasElement;
 const renderer = new Renderer(canvas);
@@ -26,7 +25,7 @@ const sound = new NullSound();
 const placeholder = { update() {}, render() {} };
 const game = new Game(sound, placeholder);
 game.session.team = 'sonic';
-game.goto(new Act(game, TEST_ZONE, 0, { characterDef: () => SONIC }), 0);
+startAct(game, TEST_ZONE, 0, 0);
 
 const params = new URLSearchParams(location.search);
 if (params.has('debug')) game.debug = true;

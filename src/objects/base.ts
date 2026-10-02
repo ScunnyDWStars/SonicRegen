@@ -44,6 +44,8 @@ export abstract class GameObject {
 
   update(_act: Act): void {}
   draw(_r: Renderer, _cx: number, _cy: number, _act: Act): void {}
+  /** Return false to make the solid box ignore this player this frame (e.g. a rolling player breaks it). */
+  solidFor?(p: Player, act?: Act): boolean;
   /** Player's touch box overlaps this object's. */
   touch?(act: Act, p: Player): void;
   /** Player landed on / is standing on the solid box. */
