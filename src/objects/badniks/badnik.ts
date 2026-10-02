@@ -59,6 +59,8 @@ export class Projectile extends GameObject {
     public vy: number,
     public grv = 0,
     public color?: number,
+    /** Custom sprite (coconuts, seeds, bombs). */
+    public img?: (frame: number) => PixelImage,
   ) {
     super(x, y);
     this.hw = 4;
@@ -89,6 +91,10 @@ export class Projectile extends GameObject {
     if (p.hurt(act, this.x)) this.dead = true;
   }
   override draw(r: Renderer, cx: number, cy: number, act: Act): void {
-    r.image(shotImg(act.frame >> 2, this.color), this.x - cx, this.y - cy);
+    r.image(
+      this.img ? this.img(act.frame >> 2) : shotImg(act.frame >> 2, this.color),
+      this.x - cx,
+      this.y - cy,
+    );
   }
 }

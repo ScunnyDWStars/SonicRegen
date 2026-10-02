@@ -51,8 +51,11 @@ export function playAct(zone: ZoneDef, team: Team = 'sonic', act = 0) {
 }
 
 /** Run frames with a held-button mask (or function of frame index). */
+const pads = new WeakMap<Game, Pad>();
+
 export function frames(game: Game, n: number, held: number | ((f: number) => number) = 0): void {
-  const pad = new Pad();
+  let pad = pads.get(game);
+  if (!pad) pads.set(game, (pad = new Pad()));
   for (let f = 0; f < n; f++) {
     pad.latch(typeof held === 'function' ? held(f) : held);
     game.update(pad);

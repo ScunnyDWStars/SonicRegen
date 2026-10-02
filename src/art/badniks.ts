@@ -360,3 +360,137 @@ export function chemBlob(size: number, frame: number): PixelImage {
     return img;
   });
 }
+
+// ---------------------------------------------------------------- Jungle Isle
+
+/** "Cocobot": a monkey robot that clings to trees and throws coconuts. Faces left. */
+export function cocoBot(frame: number, throwing: boolean): PixelImage {
+  const f = frame & 1;
+  return cached(`coco:${f}:${throwing}`, () => {
+    const img = canvas(40, 40, 20, 20);
+    const fur = rgb(120, 72, 160);
+    // Tail curl
+    img.line(28, 26, 34, 30, 2, fur);
+    img.circle(35, 27, 3, fur);
+    img.circle(35, 27, 1.5, 0);
+    img.ellipse(22, 24, 8, 9, fur);
+    img.ellipse(20, 26, 4, 5, rgb(232, 200, 160));
+    img.circle(18, 12, 7, fur);
+    img.ellipse(15, 14, 5, 4, rgb(232, 200, 160));
+    img.circle(25, 9, 3, fur);
+    eye(img, 14, 11, 2, YELLOW);
+    // Arms: one holds the tree, the other throws
+    img.line(26, 20, 32, 14, 2, fur);
+    if (throwing) {
+      img.line(16, 20, 8 + f * 2, 6, 2, fur);
+      img.circle(7 + f * 2, 4, 3.5, rgb(140, 84, 36));
+    } else {
+      img.line(16, 22, 10, 28, 2, fur);
+    }
+    img.line(18, 32, 14, 37, 2, fur);
+    img.line(25, 32, 28, 37, 2, fur);
+    img.outline(OUTLINE);
+    return img;
+  });
+}
+
+/** "Rhinodash": an armoured rhino bot that charges. Faces left. */
+export function rhinoDash(frame: number, charging: boolean): PixelImage {
+  const f = frame & 1;
+  return cached(`rhino:${f}:${charging}`, () => {
+    const img = canvas(48, 32, 24, 18);
+    const plate = rgb(64, 120, 200);
+    img.circle(30, 25, 5, BLACK);
+    img.circle(30, 25, 3, STEEL);
+    img.circle(16, 25, 5, BLACK);
+    img.circle(16, 25, 3, STEEL);
+    img.ellipse(26, 15, 15, 9, plate);
+    img.ellipse(24, 11, 10, 4, rgb(120, 176, 240));
+    for (let x = 18; x < 38; x += 6) img.line(x, 7, x + 2, 22, 1, rgb(40, 80, 152));
+    // Head and horn
+    img.ellipse(10, 17, 7, 6, rgb(48, 96, 168));
+    img.poly(
+      [
+        [6, 13],
+        [-1 + (charging ? -2 : 0), 6],
+        [8, 9],
+      ],
+      charging ? RED : WHITE,
+    );
+    eye(img, 10, 14, 2, charging ? RED : YELLOW);
+    if (charging && f) img.ellipse(42, 24, 4, 2, rgb(220, 220, 220));
+    img.outline(OUTLINE);
+    return img;
+  });
+}
+
+/** "Bloomgun": a flower turret that pops open to fire seeds. */
+export function bloomGun(frame: number, open: boolean): PixelImage {
+  const f = frame & 1;
+  return cached(`bloom:${f}:${open}`, () => {
+    const img = canvas(32, 48, 16, 40);
+    img.line(16, 47, 16, 22, 3, rgb(40, 128, 48));
+    img.ellipse(10, 38, 6, 3, rgb(64, 176, 64), -0.4);
+    img.ellipse(22, 34, 6, 3, rgb(64, 176, 64), 0.4);
+    const petal = rgb(232, 64, 120);
+    if (open) {
+      for (let i = 0; i < 5; i++) {
+        const a = -Math.PI / 2 + (i - 2) * 0.6;
+        img.ellipse(16 + Math.cos(a) * 8, 16 + Math.sin(a) * 8, 5, 3, petal, a);
+      }
+      img.circle(16, 17, 5, YELLOW);
+      img.circle(16, 17, 2.5, BLACK);
+    } else {
+      img.ellipse(16, 16, 7, 9 + f, petal);
+      img.line(16, 8, 16, 24, 1, rgb(176, 32, 80));
+    }
+    img.outline(OUTLINE);
+    return img;
+  });
+}
+
+/** Coconut / seed / firebomb projectiles. */
+export function roundShot(kind: 'coconut' | 'seed' | 'fire', frame: number): PixelImage {
+  const f = frame & 1;
+  return cached(`rshot:${kind}:${f}`, () => {
+    const img = canvas(14, 14);
+    if (kind === 'coconut') {
+      img.circle(7, 7, 5, rgb(140, 84, 36));
+      img.set(5 + f, 5, rgb(232, 200, 160));
+    } else if (kind === 'seed') {
+      img.ellipse(7, 7, 3, 4, rgb(255, 224, 96), f * 0.6);
+    } else {
+      img.circle(7, 7, 6, rgb(64, 64, 72));
+      img.circle(5, 5, 2, rgb(160, 160, 176));
+      img.line(9, 3, 11, 0, 1, rgb(140, 100, 60));
+      img.set(11, 0, f ? rgb(255, 255, 96) : rgb(255, 128, 32));
+    }
+    img.outline(OUTLINE);
+    return img;
+  });
+}
+
+export function flameImg(frame: number): PixelImage {
+  const f = frame & 3;
+  return cached(`flame:${f}`, () => {
+    const img = canvas(16, 24, 8, 23);
+    const h = [16, 20, 18, 22][f]!;
+    img.poly(
+      [
+        [1, 23],
+        [8 + (f % 2 ? 2 : -2), 23 - h],
+        [15, 23],
+      ],
+      rgb(255, 96, 16),
+    );
+    img.poly(
+      [
+        [4, 23],
+        [8, 23 - h * 0.6],
+        [12, 23],
+      ],
+      rgb(255, 224, 64),
+    );
+    return img;
+  });
+}

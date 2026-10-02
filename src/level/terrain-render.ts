@@ -43,6 +43,11 @@ export class TerrainRenderer {
     for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 2; dx++) this.tile(tx + dx, ty + dy);
   }
 
+  /** Forget all cached art (palette changes). */
+  clear(): void {
+    this.tiles.clear();
+  }
+
   /** Forget cached art in a rectangle (after level pixels change). */
   invalidate(x: number, y: number, w: number, h: number): void {
     for (let ty = Math.floor(y / T); ty <= Math.floor((y + h) / T); ty++)

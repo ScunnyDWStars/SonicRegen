@@ -96,7 +96,8 @@ function climbStep(p: Player, w: PlayerWorld): void {
     p.angle = 0;
     return;
   }
-  if (wallDist(p, w, p.hr - 4) > 1) {
+  // Let go when the wall no longer reaches his hands (centre height).
+  if (wallDist(p, w, 0) > 1) {
     p.action = 'glideFall';
     p.grounded = false;
   }
