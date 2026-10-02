@@ -266,3 +266,97 @@ export function chainLink(): PixelImage {
     return img;
   });
 }
+
+// ---------------------------------------------------------------- Neon Refinery
+
+/** "Crawlbot": a domed crawler on treads with a spike launcher. Faces left. */
+export function crawlBot(frame: number): PixelImage {
+  const f = frame & 1;
+  return cached(`crawl:${f}`, () => {
+    const img = canvas(40, 32, 20, 18);
+    // Treads
+    img.rect(6, 22, 28, 7, BLACK);
+    for (let x = 8 + f * 2; x < 34; x += 4) img.rect(x, 23, 2, 5, STEEL_DK);
+    // Dome
+    img.ellipse(20, 17, 14, 9, rgb(160, 56, 200));
+    img.ellipse(17, 13, 7, 4, rgb(208, 120, 240));
+    eye(img, 10, 17, 2.5, YELLOW);
+    // Spikes on top
+    for (const dx of [-6, 0, 6])
+      img.poly(
+        [
+          [20 + dx - 3, 10],
+          [20 + dx, 2 - (dx === 0 ? 2 : 0)],
+          [20 + dx + 3, 10],
+        ],
+        STEEL,
+      );
+    img.outline(OUTLINE);
+    return img;
+  });
+}
+
+/** "Clampspider": a spider drone that drops on a thread. */
+export function clampSpider(frame: number): PixelImage {
+  const f = frame & 1;
+  return cached(`spider:${f}`, () => {
+    const img = canvas(40, 32, 20, 14);
+    for (const s of [-1, 1])
+      for (let i = 0; i < 2; i++) {
+        const x0 = 20 + s * 6,
+          y0 = 14 + i * 3;
+        const kx = 20 + s * (14 + i * 2),
+          ky = 8 + i * 6 + f;
+        img.line(x0, y0, kx, ky, 2, STEEL_DK);
+        img.line(kx, ky, kx + s * 3, ky + 10, 2, STEEL_DK);
+      }
+    img.ellipse(20, 14, 9, 8, STEEL);
+    img.ellipse(18, 11, 4, 3, WHITE);
+    eye(img, 20, 16, 3, RED);
+    img.outline(OUTLINE);
+    return img;
+  });
+}
+
+/** "Drillbot": a tracked tank with a spinning drill. Faces left. */
+export function drillBot(frame: number, charging: boolean): PixelImage {
+  const f = frame & 3;
+  return cached(`drill:${f}:${charging}`, () => {
+    const img = canvas(48, 32, 24, 18);
+    img.rect(14, 22, 26, 7, BLACK);
+    for (let x = 16 + (f & 1) * 2; x < 40; x += 4) img.rect(x, 23, 2, 5, STEEL_DK);
+    img.rect(16, 8, 24, 15, rgb(232, 168, 32));
+    img.rect(16, 8, 24, 3, rgb(255, 224, 96));
+    for (let x = 18; x < 40; x += 6) img.rect(x, 13, 3, 8, BLACK);
+    img.rect(28, 2, 10, 7, STEEL_DK);
+    eye(img, 33, 5, 2, charging ? RED : YELLOW);
+    // Drill cone
+    img.poly(
+      [
+        [16, 9],
+        [2, 15],
+        [16, 21],
+      ],
+      STEEL,
+    );
+    for (let i = 0; i < 3; i++) {
+      const x = 14 - i * 4 - (f % 2) * 2;
+      img.line(x, 10 + i * 1.5, x - 1, 20 - i * 1.5, 1, STEEL_DK);
+    }
+    img.outline(OUTLINE);
+    return img;
+  });
+}
+
+/** A blob of chemical (boss drop). */
+export function chemBlob(size: number, frame: number): PixelImage {
+  const f = frame & 1;
+  return cached(`blob:${size}:${f}`, () => {
+    const s = size;
+    const img = canvas(s * 2 + 4, s * 2 + 4);
+    img.ellipse(s + 2, s + 2, s * (f ? 1 : 0.9), s * (f ? 0.9 : 1), rgb(255, 96, 208));
+    img.ellipse(s, s, s * 0.4, s * 0.3, rgb(255, 200, 240));
+    img.outline(rgb(96, 16, 80));
+    return img;
+  });
+}
