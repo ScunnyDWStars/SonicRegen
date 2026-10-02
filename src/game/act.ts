@@ -234,6 +234,11 @@ export class Act implements Scene, PlayerWorld {
     p.y = y - p.hr - 1;
     p.xsp = p.ysp = p.gsp = 0;
     p.grounded = false;
+    if (p.dead) {
+      p.action = 'normal';
+      this.state = 'play';
+      this.camera.frozenX = false;
+    }
     this.camera.snap(p);
   }
 

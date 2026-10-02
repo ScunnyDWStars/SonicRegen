@@ -154,6 +154,25 @@ export class LevelBuilder {
     return this;
   }
 
+  /**
+   * Carve a passage `height` px tall above a terrain profile between x0 and x1
+   * (tunnels through hills).
+   */
+  carveAbove(
+    points: readonly TerrainPoint[],
+    x0: number,
+    x1: number,
+    height: number,
+    back: Mat = Mat.Decor,
+  ): this {
+    const v = back << MAT_SHIFT; // drawn back wall, never solid
+    for (let x = Math.floor(x0); x < Math.ceil(x1); x++) {
+      const floor = Math.round(LevelBuilder.profileY(points, x + 0.5));
+      for (let y = Math.max(0, floor - height); y < floor; y++) this.map.set(x, y, v);
+    }
+    return this;
+  }
+
   rect(x: number, y: number, w: number, h: number, o: ShapeOpts = {}): this {
     const v = this.value(o);
     for (let yy = Math.round(y); yy < Math.round(y + h); yy++) this.span(x, x + w, yy, v);

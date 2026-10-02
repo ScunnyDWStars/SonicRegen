@@ -32,7 +32,7 @@ export class Camera {
   /** Jump straight to the player (spawn, respawn). */
   snap(p: Player): void {
     this.x = p.x - 152;
-    this.y = p.y - 96;
+    this.y = Math.max(this.minY, Math.min(this.maxY, p.y - 96));
     this.clamp();
   }
 
@@ -71,7 +71,9 @@ export class Camera {
   clamp(): void {
     const minX = Math.max(this.minX, this.lockLeft);
     this.x = Math.max(minX, Math.min(this.maxX, this.x));
-    this.y = Math.max(this.minY, Math.min(this.maxY, this.y));
+    // Ease into new vertical limits instead of jumping (boss arenas).
+    if (this.y < this.minY) this.y = Math.min(this.minY, this.y + 4);
+    if (this.y > this.maxY) this.y = Math.max(this.maxY, this.y - 4);
   }
 
   /** Integer render position including shake. */

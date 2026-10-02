@@ -5,7 +5,7 @@ import { GameLoop } from './engine/loop';
 import { Renderer } from './engine/renderer';
 import { startAct } from './game/flow';
 import { Game } from './game/game';
-import { TEST_ZONE } from './zones/test-room';
+import { ZONES, zoneById } from './zones/all';
 import './objects';
 
 const canvas = document.getElementById('screen') as HTMLCanvasElement;
@@ -25,9 +25,10 @@ const sound = new NullSound();
 const placeholder = { update() {}, render() {} };
 const game = new Game(sound, placeholder);
 game.session.team = 'sonic';
-startAct(game, TEST_ZONE, 0, 0);
-
 const params = new URLSearchParams(location.search);
+const zone = zoneById(params.get('zone') ?? '') ?? ZONES[0]!;
+startAct(game, zone, Number(params.get('act') ?? 1) - 1, 0);
+
 if (params.has('debug')) game.debug = true;
 
 const loop = new GameLoop({

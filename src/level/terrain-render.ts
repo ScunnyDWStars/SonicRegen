@@ -74,22 +74,31 @@ export class TerrainRenderer {
       y0 = ty * T;
     const colH = T + CAP * 2;
     const mats = new Uint8Array(colH);
+    const cls = new Uint8Array(colH);
     const ups = new Uint8Array(colH);
     const downs = new Uint8Array(colH);
     for (let lx = 0; lx < T; lx++) {
       const x = x0 + lx;
-      for (let i = 0; i < colH; i++) mats[i] = map.get(x, y0 - CAP + i) >> MAT_SHIFT;
-      // Distance (in material pixels) to the nearest air above and below.
+      for (let i = 0; i < colH; i++) {
+        const v = map.get(x, y0 - CAP + i);
+        mats[i] = v >> MAT_SHIFT;
+        // 0 = air, 1 = back wall (drawn, not solid), 2 = solid
+        cls[i] = !mats[i] ? 0 : v & 3 ? 2 : 1;
+      }
+      // Distance to the nearest change of class above and below, so solid ground
+      // gets grass/trim against both open air and back walls.
       let run = -1;
       for (let i = 0; i < colH; i++) {
-        if (!mats[i]) run = -1;
-        else run = run < 0 ? (i === 0 ? CAP : 0) : Math.min(CAP, run + 1);
+        if (!cls[i]) run = -1;
+        else if (i > 0 && cls[i - 1] === cls[i]) run = Math.min(CAP, run + 1);
+        else run = i === 0 ? CAP : 0;
         ups[i] = Math.max(0, run);
       }
       run = -1;
       for (let i = colH - 1; i >= 0; i--) {
-        if (!mats[i]) run = -1;
-        else run = run < 0 ? (i === colH - 1 ? CAP : 0) : Math.min(CAP, run + 1);
+        if (!cls[i]) run = -1;
+        else if (i < colH - 1 && cls[i + 1] === cls[i]) run = Math.min(CAP, run + 1);
+        else run = i === colH - 1 ? CAP : 0;
         downs[i] = Math.max(0, run);
       }
       for (let ly = 0; ly < T; ly++) {
