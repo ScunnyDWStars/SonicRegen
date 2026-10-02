@@ -170,7 +170,7 @@ export function buildJungleAct2() {
     [5100, G + 100, 'step'],
     [5101, G + 420],
     [6300, G + 420],
-    [6600, G + 60],
+    [6900, G + 60],
     [7600, G + 60],
     [7900, G - 20],
     [11776, G - 20],
@@ -206,9 +206,11 @@ export function buildJungleAct2() {
   b.rect(5500, G + 300, 96, 16, { material: Mat.Platform, topOnly: true });
   b.place('platform', 5800, G + 260, { w: 64, motion: 'v', range: 60, period: 200 });
   b.onGround('monitor', 5700, 16, { kind: 'lightning' });
+  b.onGround('bubbleVent', 6150, 4);
+  b.onGround('spring', 6290, 12, { dir: 'upRight', red: true });
 
   // --- Burnt hills, loop and the run to the boss
-  b.onGround('starpost', 6800, 32, { id: 2 });
+  b.onGround('starpost', 6960, 32, { id: 2 });
   b.loop(7200, G + 60, 96);
   b.ringArc(7200, G + 60 - 96, 64, -60, 240, 12);
   b.onGround('bloomGun', 8200, 0);

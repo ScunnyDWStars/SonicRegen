@@ -25,11 +25,17 @@ export class SwingPlatform extends GameObject {
     this.hw = 0;
     this.t = phase;
     this.solid = new SolidBox(x, y + links * 16, 24, 8, true);
+    this.solid.predict = (f) => this.at(this.t + f);
     this.depth = 3;
     this.alwaysActive = true;
   }
-  private angle(): number {
-    return Math.sin((this.t / 150) * Math.PI * 2) * this.amp;
+  private angle(t = this.t): number {
+    return Math.sin((t / 150) * Math.PI * 2) * this.amp;
+  }
+  private at(t: number): { x: number; y: number } {
+    const a = this.angle(t);
+    const L = this.links * 16 + 8;
+    return { x: this.x + Math.sin(a) * L, y: this.y + Math.cos(a) * L };
   }
   override update(): void {
     this.t++;

@@ -37,7 +37,7 @@ export class PalmBoss extends Boss {
   private readonly hoverY: number;
   constructor(arenaX: number, arenaW: number, groundY: number, act: Act) {
     super(arenaX + arenaW - 64, act.camera.y - 48, arenaX, arenaW, groundY);
-    this.hoverY = groundY - 152;
+    this.hoverY = groundY - 120;
     this.ball = new WreckingBall(this.x, this.y);
     act.spawn(this.ball);
   }
@@ -59,9 +59,9 @@ export class PalmBoss extends Boss {
       this.placeBall();
       return false;
     }
-    this.chain = Math.min(96, this.chain + 1.5);
+    this.chain = Math.min(64, this.chain + 1.5);
     this.placeBall();
-    return this.chain >= 96;
+    return this.chain >= 64;
   }
 
   fight(): void {

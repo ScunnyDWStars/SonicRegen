@@ -62,6 +62,7 @@ export function buildPalmAct1() {
     [4000, G - 170],
   ]);
   b.rings(3320, G - 200, 8, 32);
+  b.place('collapsingLedge', 4048, G - 158, { w: 96, h: 24 });
   b.onGround('monitor', 3900, 16, { kind: 'fire' }, G - 300);
   decor(b, 'palm', [3640]);
 
@@ -72,7 +73,7 @@ export function buildPalmAct1() {
     [4200, G - 40],
     [4600, G - 40],
     [4900, G + 60],
-    [5100, G + 60],
+    [5200, G + 60],
   ]);
   b.onGround('beetleWheel', 3760, 14, {}, G - 100);
   b.onGround('clawTank', 4300, 16, {}, G - 100);
@@ -83,7 +84,6 @@ export function buildPalmAct1() {
   decor(b, 'sunflower', [4080, 4160, 4640], -1);
 
   // --- Swinging platforms over a pit, crumbling ledge at the edge
-  b.place('collapsingLedge', 5150, G + 72, { w: 96, h: 24 });
   b.place('swingPlatform', 5330, G - 100, { links: 6, amp: 1.0, phase: 0 });
   b.place('swingPlatform', 5540, G - 100, { links: 6, amp: 1.0, phase: 75 });
   b.rings(5320, G - 20, 3, 24);
@@ -128,7 +128,7 @@ export function buildPalmAct1() {
     [8560, G - 40],
     [8760, G - 260],
     [9200, G - 230],
-    [9420, G + 50],
+    [9380, G + 80],
   ]);
   b.carveAbove(main3, 8600, 9380, 80);
   b.onGround('beetleWheel', 8100, 14);

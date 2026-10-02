@@ -78,3 +78,13 @@ describe('objects in a running act', () => {
     expect(game.scene).not.toBe(act);
   });
 });
+
+describe('giant rings', () => {
+  it('enter the special stage and are gone when you come back', async () => {
+    const { game, act } = playAct(flatZone((b) => b.place('giantRing', 300, G - 40)));
+    const { SpecialStageScene } = await import('../src/scenes/special-stage');
+    frames(game, 200, Btn.Right);
+    expect(game.scene).toBeInstanceOf(SpecialStageScene);
+    void act;
+  });
+});

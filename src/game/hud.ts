@@ -1,13 +1,12 @@
 import { rgb } from '../art/pixels';
 import { SCREEN_H, SCREEN_W } from '../engine/constants';
 import type { Renderer } from '../engine/renderer';
-import type { Act } from './act';
+import { sprites, type Act } from './act';
 import type { Game } from './game';
 
 const YELLOW = rgb(252, 228, 48);
 const RED = rgb(240, 32, 32);
 const WHITE = rgb(255, 255, 255);
-const BLUE = rgb(24, 72, 200);
 
 export function formatTime(frames: number): string {
   const s = Math.floor(frames / 60);
@@ -26,11 +25,11 @@ export function drawHud(r: Renderer, act: Act, game: Game): void {
     const flash = p.rings === 0 && act.frame & 16;
     r.text('RINGS', 16, 41, flash ? RED : YELLOW);
     r.text(String(p.rings).padStart(3, ' '), 72, 41);
-    // Lives
-    r.rect(16, SCREEN_H - 26, 16, 16, BLUE);
-    r.text(p.def.name.slice(0, 1), 20, SCREEN_H - 22, YELLOW);
-    r.text(p.def.name, 36, SCREEN_H - 26, YELLOW);
-    r.text(`×${Math.min(99, s.lives)}`, 36, SCREEN_H - 17);
+    // Lives: the character's head, cropped from their idle frame.
+    const head = r.source(sprites.frame(p.def.id, 'idle', 0));
+    r.ctx.drawImage(head, 19, 3, 26, 24, 12, SCREEN_H - 30, 26, 24);
+    r.text(p.def.name, 40, SCREEN_H - 26, YELLOW);
+    r.text(`×${Math.min(99, s.lives)}`, 40, SCREEN_H - 17);
     // Air countdown
     if (p.underwater && p.air < 720 && p.air > 0 && !p.dead) {
       const n = Math.ceil(p.air / 120) - 1;

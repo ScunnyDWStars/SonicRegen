@@ -15,6 +15,8 @@ export class SolidBox implements SolidRef {
     public topOnly = false,
   ) {}
   surface?: (localX: number) => number;
+  /** Where the box will be `frames` from now (moving platforms; used by tools and AI). */
+  predict?: (frames: number) => { x: number; y: number };
   /** Move the box and remember the delta for standing players. */
   moveTo(x: number, y: number): void {
     this.dx = x - this.x;

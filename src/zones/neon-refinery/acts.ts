@@ -41,7 +41,7 @@ export function buildRefineryAct1() {
     [4400, G - 40],
     [4500, G - 40, 'step'],
     [4501, G + 260],
-    [5600, G + 260],
+    [6100, G + 260],
   ]);
   backWall(b, 300, G - 260, 500, 260);
   groundRings(b, 200, 6);
@@ -82,12 +82,14 @@ export function buildRefineryAct1() {
   b.place('platform', 4620, G + 140, { w: 64, motion: 'v', range: 100, period: 240 });
   b.place('platform', 4840, G + 20, { w: 64, motion: 'v', range: 100, period: 240, phase: 0.5 });
   b.place('platform', 5060, G - 100, { w: 64, motion: 'v', range: 100, period: 240 });
-  b.onGround('spring', 5160, 8, { dir: 'up', red: true });
+  b.onGround('spring', 4950, 8, { dir: 'up', red: true });
   b.onGround('crawlBot', 4950, 12);
-  deck(b, 5240, 6100, G - 260);
+  deck(b, 5240, 6000, G - 260);
+  // Fell to the pit floor? This spring launches you clear of the deck to the ramp.
+  b.onGround('spring', 6084, 8, { dir: 'up', red: true }, G);
   b.onGround('drillBot', 5700, 14, {}, G - 400);
   groundRings(b, 5300, 6, 24, 24, G - 400);
-  b.onGround('monitor', 6040, 16, { kind: 'shoes' }, G - 400);
+  b.onGround('monitor', 5960, 16, { kind: 'shoes' }, G - 400);
 
   // --- Down a long ramp, through a second tube, to a booster run
   b.terrain([
@@ -167,20 +169,17 @@ export function buildRefineryAct2() {
   b.onGround('monitor', 2050, 16, { kind: 'bubble' });
   groundRings(b, 2500, 8, 24, 28);
   b.onGround('starpost', 1900, 32, { id: 1 });
-  // Escape route: a zig-zag staircase of semi-solid steps up the right side.
-  const steps: [number, number][] = [
-    [3300, 820],
-    [3520, 740],
-    [3740, 660],
-    [3960, 580],
-    [3740, 500],
-    [3520, 420],
-    [3740, 340],
-    [3960, 280],
-  ];
-  for (const [x, dy] of steps) b.rect(x, G + dy, 160, 16, { material: Mat.Platform, topOnly: true });
+  // Escape route: a staircase of blocks up to a red spring by the exit.
+  for (let k = 0; k < 5; k++) {
+    const top = G + 900 - 80 * (k + 1);
+    // The last step reaches the basin wall so there is no gap to fall into.
+    b.rect(3300 + k * 160, top, k === 4 ? 4200 - (3300 + k * 160) : 160, G + 900 - top, {
+      material: Mat.Platform,
+    });
+  }
+  b.onGround('spring', 4184, 8, { dir: 'up', red: true }, G + 400);
   b.rings(3340, G + 790, 4, 28);
-  b.rings(3560, G + 390, 4, 28);
+  b.rings(3660, G + 630, 4, 28);
 
   // --- Upper corridor, tubes and boosters
   b.terrain(

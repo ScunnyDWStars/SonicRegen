@@ -412,7 +412,9 @@ export class GiantRing extends GameObject {
   }
   override update(act: Act): void {
     this.t++;
-    if (this.persistKey && act.game.session.usedGiantRings.has(this.persistKey)) this.dead = true;
+    // Rings already used (before a restart or special stage) stay gone.
+    if (this.t === 1 && this.persistKey && act.game.session.usedGiantRings.has(this.persistKey))
+      this.dead = true;
     if (this.flash > 0 && ++this.flash > 40) {
       this.dead = true;
       act.hooks.onGiantRing?.(act);
@@ -530,8 +532,23 @@ export class Platform extends GameObject {
     this.hw = 0;
     this.t = phase * period;
     this.solid = new SolidBox(x, y, w / 2, h / 2, true);
+    this.solid.predict = (f) => this.at(this.t + f);
     this.depth = 3;
     this.alwaysActive = motion !== 'none' && motion !== 'fall';
+  }
+  /** Position along the motion path at time t (fall platforms just stay put). */
+  private at(t: number): { x: number; y: number } {
+    const a = (t / this.period) * Math.PI * 2;
+    switch (this.motion) {
+      case 'h':
+        return { x: this.ox + Math.sin(a) * this.range, y: this.oy };
+      case 'v':
+        return { x: this.ox, y: this.oy + Math.sin(a) * this.range };
+      case 'circle':
+        return { x: this.ox + Math.cos(a) * this.range, y: this.oy + Math.sin(a) * this.range };
+      default:
+        return { x: this.x, y: this.y };
+    }
   }
   override update(act: Act): void {
     this.t++;

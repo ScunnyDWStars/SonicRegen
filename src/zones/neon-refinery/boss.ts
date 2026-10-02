@@ -50,7 +50,7 @@ export class RefineryBoss extends Boss {
   private fill = 0;
   constructor(arenaX: number, arenaW: number, groundY: number, act: Act) {
     super(arenaX + arenaW + 40, groundY - 150, arenaX, arenaW, groundY);
-    this.hoverY = groundY - 136;
+    this.hoverY = groundY - 118;
     void act;
   }
   enter(): boolean {

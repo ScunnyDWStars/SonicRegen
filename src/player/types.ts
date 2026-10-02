@@ -17,6 +17,8 @@ export interface SolidRef {
   topOnly?: boolean;
   /** Optional surface height function relative to the object's top (for slopes). */
   surface?(localX: number): number;
+  /** Future position of a moving platform. */
+  predict?(frames: number): { x: number; y: number };
 }
 
 export type Sfx =
