@@ -5,6 +5,8 @@ import { GameLoop } from './engine/loop';
 import { Renderer } from './engine/renderer';
 import { startAct } from './game/flow';
 import { Game } from './game/game';
+import type { Team } from './game/session';
+import { CharacterSelect } from './scenes/character-select';
 import { ZONES, zoneById } from './zones/all';
 import './objects';
 
@@ -24,10 +26,22 @@ fit();
 const sound = new NullSound();
 const placeholder = { update() {}, render() {} };
 const game = new Game(sound, placeholder);
-game.session.team = 'sonic';
 const params = new URLSearchParams(location.search);
-const zone = zoneById(params.get('zone') ?? '') ?? ZONES[0]!;
-startAct(game, zone, Number(params.get('act') ?? 1) - 1, 0);
+const team = params.get('team') as Team | null;
+const zoneParam = zoneById(params.get('zone') ?? '');
+if (zoneParam || team) {
+  // Direct start for testing: ?zone=palm-coast&act=2&team=knuckles
+  game.session.team = team ?? 'sonic';
+  startAct(game, zoneParam ?? ZONES[0]!, Number(params.get('act') ?? 1) - 1, 0);
+} else {
+  game.goto(
+    new CharacterSelect((g, t) => {
+      g.session.resetForNewGame(t);
+      startAct(g, ZONES[0]!, 0);
+    }),
+    0,
+  );
+}
 
 if (params.has('debug')) game.debug = true;
 

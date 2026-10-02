@@ -387,11 +387,12 @@ function knucklesHead(img: PixelImage, pal: CharPalette, p: Pose, hx: number, hy
 function drawTails(img: PixelImage, pal: CharPalette, cx: number, cy: number, phase: number): void {
   for (let i = 0; i < 2; i++) {
     const a = phase + i * 1.4;
-    const ex = cx - 10 - Math.cos(a) * 3,
-      ey = cy + 2 + Math.sin(a) * 6 - i * 3;
-    img.line(cx - 2, cy + 1, ex, ey, 5, i ? pal.mainDark : pal.main);
-    img.circle(ex - 2, ey, 3.2, i ? pal.mainDark : pal.main);
-    img.circle(ex - 3.5, ey, 2.2, i ? pal.gloveDark : pal.skin);
+    const ex = cx - 13 - Math.cos(a) * 3,
+      ey = cy + 1 + Math.sin(a) * 7 - i * 4;
+    const col = i ? pal.mainDark : pal.main;
+    img.line(cx - 2, cy + 1, ex, ey, 6, col);
+    img.circle(ex - 2, ey, 4.5, col);
+    img.circle(ex - 4, ey, 3, i ? pal.gloveDark : pal.skin);
   }
 }
 

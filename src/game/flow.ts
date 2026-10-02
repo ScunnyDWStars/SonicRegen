@@ -1,6 +1,7 @@
 import { Pad } from '../engine/input';
 import { MessageScene } from '../scenes/message';
 import { CHARACTERS } from '../player/characters';
+import { makeSidekick } from '../player/sidekick';
 import type { ZoneDef } from '../zones';
 import { Act, type ActHooks } from './act';
 import type { Game } from './game';
@@ -25,7 +26,7 @@ export const flow = {
     flow.toTitle(game);
   },
   /** Sidekick AI factory (registered by the Tails module). */
-  sidekick: undefined as ActHooks['makeSidekickPad'],
+  sidekick: makeSidekick as ActHooks['makeSidekickPad'],
 };
 
 export const hooks: ActHooks = {

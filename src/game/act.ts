@@ -63,6 +63,8 @@ export class Act implements Scene, PlayerWorld {
   readonly deferred: Array<() => void> = [];
   /** Optional per-act logic (zone scripts: rising water, transitions...). */
   scripts: Array<(act: Act) => void> = [];
+  /** Logic run after players move, before object interaction (sidekick carry). */
+  afterPlayers: Array<(act: Act) => void> = [];
   /** Extra draw hooks, drawn after objects (foreground layers). */
   foreground: Array<(r: Renderer, cx: number, cy: number) => void> = [];
 
@@ -88,6 +90,7 @@ export class Act implements Scene, PlayerWorld {
     if (team === 'sonic+tails') {
       const tails = new Player(hooks.characterDef('tails'), start.x - 32, start.y);
       tails.canGoSuper = false;
+      tails.sidekick = true;
       this.players.push(tails);
       if (hooks.makeSidekickPad) this.sidekickPads.set(tails, hooks.makeSidekickPad(this, tails));
     }
@@ -346,7 +349,8 @@ export class Act implements Scene, PlayerWorld {
           if (i === 0) this.chain = 0;
         }
       });
-      for (const p of this.players) if (!p.dead) this.interact(p);
+      for (const s of this.afterPlayers) s(this);
+      for (const p of this.players) if (!p.dead && !p.noClip) this.interact(p);
     }
     this.flushSpawns();
     this.objects = this.objects.filter((o) => !o.dead);

@@ -148,6 +148,10 @@ export class Player {
   instaShield = 0;
   /** Horizontal camera lag after a spindash release. */
   cameraLag = 0;
+  /** AI-controlled partner: loses no rings and respawns instead of dying. */
+  sidekick = false;
+  /** Physics disabled; position is set externally (sidekick flying in, carried). */
+  noClip = false;
   /** Set when an attack (ball, glide, invincibility) should hurt enemies. */
   get attacking(): boolean {
     return (
@@ -216,6 +220,13 @@ export class Player {
 
     if (this.action === 'dead' || this.action === 'drown') {
       this.updateDead(w);
+      this.animate();
+      return;
+    }
+    if (this.action === 'carried' || this.noClip) {
+      // Position is driven by whoever is carrying us.
+      this.updateWater(w);
+      this.updateTimers(w);
       this.animate();
       return;
     }
@@ -384,7 +395,7 @@ export class Player {
   }
 
   /** Steps 7-12 of the grounded update: bounds, speed split, walls, move, floor, slipping. */
-  private groundMove(w: PlayerWorld): void {
+  groundMove(w: PlayerWorld): void {
     this.xsp = this.gsp * cosD(this.angle);
     this.ysp = this.gsp * -sinD(this.angle);
     this.applyBounds(w);
@@ -742,7 +753,9 @@ export class Player {
   hurt(w: PlayerWorld, sourceX: number): boolean {
     if (this.dead || this.action === 'hurt' || this.invuln > 0 || this.invincible > 0 || this.superForm)
       return false;
-    if (this.shield) {
+    if (this.sidekick) {
+      w.sfx('hurt');
+    } else if (this.shield) {
       this.shield = null;
       w.sfx('hurt');
     } else if (this.rings > 0) {

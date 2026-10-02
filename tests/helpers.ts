@@ -38,6 +38,8 @@ export function makePlayer(level: LevelData, def: CharacterDef = SONIC, x?: numb
   return p;
 }
 
+const pads = new WeakMap<Player, Pad>();
+
 /** Runs `frames` frames holding `held` (a Btn mask, or a function of the frame number). */
 export function run(
   p: Player,
@@ -46,7 +48,8 @@ export function run(
   held: number | ((f: number) => number) = 0,
   each?: (f: number) => void,
 ): void {
-  const pad = new Pad();
+  let pad = pads.get(p);
+  if (!pad) pads.set(p, (pad = new Pad()));
   for (let f = 0; f < frames; f++) {
     pad.latch(typeof held === 'function' ? held(f) : held);
     w.frame++;
