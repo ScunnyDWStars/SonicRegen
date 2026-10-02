@@ -1,12 +1,14 @@
-import { NullSound } from './audio/sound';
+import { NullSound, type Sound } from './audio/sound';
+import { WebAudioSound } from './audio/webaudio';
 import { SCREEN_H, SCREEN_W } from './engine/constants';
-import { InputManager } from './engine/input';
+import { DEFAULT_KEYS, InputManager } from './engine/input';
 import { GameLoop } from './engine/loop';
 import { Renderer } from './engine/renderer';
-import { startAct } from './game/flow';
+import { flow, startAct } from './game/flow';
 import { Game } from './game/game';
+import { loadOptions, saveOptions, type Options } from './game/save';
 import type { Team } from './game/session';
-import { CharacterSelect } from './scenes/character-select';
+import { installMenus, saveSession } from './scenes/menus';
 import { SpecialStageScene } from './scenes/special-stage';
 import { ZONES, zoneById } from './zones/all';
 import './objects';
@@ -16,42 +18,51 @@ const renderer = new Renderer(canvas);
 const input = new InputManager();
 input.attach(window);
 
+const params = new URLSearchParams(location.search);
+let sound: Sound;
+try {
+  sound = params.has('mute') ? new NullSound() : new WebAudioSound();
+} catch {
+  sound = new NullSound();
+}
+
+const opts = loadOptions();
+function applyOptions(o: Options): void {
+  input.keys = o.keys ? { ...o.keys } : { ...DEFAULT_KEYS };
+  sound.volumes.music = o.music / 10;
+  sound.volumes.sfx = o.sfx / 10;
+  sound.applyVolumes();
+  fit();
+  saveOptions(o);
+}
+
 function fit(): void {
-  const scale = Math.max(1, Math.floor(Math.min(innerWidth / SCREEN_W, innerHeight / SCREEN_H)));
+  const maxScale = Math.max(1, Math.floor(Math.min(innerWidth / SCREEN_W, innerHeight / SCREEN_H)));
+  const scale = opts.scale > 0 ? Math.min(opts.scale, maxScale) : maxScale;
   canvas.style.width = `${SCREEN_W * scale}px`;
   canvas.style.height = `${SCREEN_H * scale}px`;
 }
 addEventListener('resize', fit);
-fit();
 
-const sound = new NullSound();
-const placeholder = { update() {}, render() {} };
-const game = new Game(sound, placeholder);
-const params = new URLSearchParams(location.search);
+const game = new Game(sound, { update() {}, render() {} });
+game.onSave = saveSession;
+installMenus(opts, applyOptions);
+applyOptions(opts);
+
+if (params.has('debug')) game.debug = true;
 const team = params.get('team') as Team | null;
 const zoneParam = zoneById(params.get('zone') ?? '');
 if (params.has('special')) {
   // Jump straight into a special stage: ?special=3
-  game.session.team = team ?? 'sonic';
-  game.goto(
-    new SpecialStageScene(Number(params.get('special')) || 0, 'sonic', (g) => startAct(g, ZONES[0]!, 0)),
-    0,
-  );
+  game.goto(new SpecialStageScene(Number(params.get('special')) || 0, 'sonic', (g) => flow.toTitle(g)), 0);
 } else if (zoneParam || team) {
   // Direct start for testing: ?zone=palm-coast&act=2&team=knuckles
   game.session.team = team ?? 'sonic';
+  game.session.unlocked = ZONES.length;
   startAct(game, zoneParam ?? ZONES[0]!, Number(params.get('act') ?? 1) - 1, 0);
 } else {
-  game.goto(
-    new CharacterSelect((g, t) => {
-      g.session.resetForNewGame(t);
-      startAct(g, ZONES[0]!, 0);
-    }),
-    0,
-  );
+  flow.toTitle(game);
 }
-
-if (params.has('debug')) game.debug = true;
 
 const loop = new GameLoop({
   update() {

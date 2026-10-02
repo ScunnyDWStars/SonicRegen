@@ -71,6 +71,8 @@ export class InputManager {
   readonly pad = new Pad();
   keys: KeyMap = { ...DEFAULT_KEYS };
   private keyMask = 0;
+  /** Keys pressed since the last poll, so taps shorter than a frame still register. */
+  private tapMask = 0;
   private readonly down = new Set<string>();
   /** Raw key presses since the last poll, for menus such as key rebinding. */
   readonly keyEvents: string[] = [];
@@ -89,7 +91,10 @@ export class InputManager {
         return;
       }
       if (!e.repeat) this.keyEvents.push(e.code);
-      if (this.keys[e.code] !== undefined) e.preventDefault();
+      if (this.keys[e.code] !== undefined) {
+        e.preventDefault();
+        this.tapMask |= this.keys[e.code]!;
+      }
       this.down.add(e.code);
       this.recompute();
     });
@@ -131,7 +136,8 @@ export class InputManager {
 
   /** Call once per logic frame. */
   poll(): void {
-    let raw = this.keyMask | this.readGamepad();
+    let raw = this.keyMask | this.tapMask | this.readGamepad();
+    this.tapMask = 0;
     // Opposite directions cancel, as on a real d-pad.
     if ((raw & (Btn.Left | Btn.Right)) === (Btn.Left | Btn.Right)) raw &= ~(Btn.Left | Btn.Right);
     if ((raw & (Btn.Up | Btn.Down)) === (Btn.Up | Btn.Down)) raw &= ~(Btn.Up | Btn.Down);

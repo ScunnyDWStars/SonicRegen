@@ -6,8 +6,12 @@ export interface Sound {
   music(track: string | null, opts?: { restart?: boolean; fadeIn?: boolean }): void;
   /** Temporarily override music (invincibility, drowning, 1-up jingle). */
   overrideMusic(track: string | null): void;
+  /** One-shot tune that pauses the music (extra life). */
+  jingle(track: string): void;
   /** Speed multiplier (speed shoes). */
   setTempo(mult: number): void;
+  /** Re-apply `volumes` after changing them. */
+  applyVolumes(): void;
   readonly current: string | null;
   volumes: { music: number; sfx: number };
 }
@@ -24,5 +28,7 @@ export class NullSound implements Sound {
     this.current = track;
   }
   overrideMusic(): void {}
+  jingle(): void {}
   setTempo(): void {}
+  applyVolumes(): void {}
 }

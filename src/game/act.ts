@@ -111,6 +111,8 @@ export class Act implements Scene, PlayerWorld {
     });
     this.zone.acts[actIndex]!.setup?.(this);
     this.camera.snap(leader);
+    game.sound.overrideMusic(null);
+    game.sound.setTempo(1);
   }
 
   get leader(): Player {
@@ -155,8 +157,7 @@ export class Act implements Scene, PlayerWorld {
   }
 
   extraLife(): void {
-    this.game.sound.sfx('oneUp');
-    this.game.sound.overrideMusic('oneUp');
+    this.game.sound.jingle('oneUp');
   }
 
   collectRing(x: number, y: number, n = 1): void {
@@ -296,7 +297,26 @@ export class Act implements Scene, PlayerWorld {
   }
 
   paused = false;
-  private wasSuper = false;
+  private musicOverride: string | null = null;
+
+  /** Power-up music (Super, invincibility, drowning countdown) and speed-shoe tempo. */
+  private updateMusic(): void {
+    const p = this.leader;
+    const want = p.dead
+      ? null
+      : p.superForm
+        ? 'super'
+        : p.invincible > 0
+          ? 'invincible'
+          : p.underwater && p.air < 720 && p.shield !== 'bubble'
+            ? 'drowning'
+            : null;
+    if (want !== this.musicOverride) {
+      this.musicOverride = want;
+      this.game.sound.overrideMusic(want);
+    }
+    this.game.sound.setTempo(p.speedShoes > 0 && !p.dead ? 1.25 : 1);
+  }
 
   private terrainWarm(): void {
     this.terrain?.warm(this.leader.x, this.leader.y);
@@ -355,11 +375,7 @@ export class Act implements Scene, PlayerWorld {
     }
     this.flushSpawns();
     this.objects = this.objects.filter((o) => !o.dead);
-    // Super form music follows the leader's state.
-    if (this.leader.superForm !== this.wasSuper) {
-      this.wasSuper = this.leader.superForm;
-      this.game.sound.overrideMusic(this.wasSuper ? 'super' : null);
-    }
+    this.updateMusic();
     if (!this.leader.dead || this.state === 'clear') cam.update(this.leader);
     if (cam.shake > 0) cam.shake--;
     this.effects.update(this.waterY);

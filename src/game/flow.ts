@@ -26,6 +26,12 @@ export const flow = {
   toEnding: (game: Game): void => {
     flow.toTitle(game);
   },
+  /** Out of lives: continue screen or game over (registered by the menus). */
+  toGameOver: (game: Game, zone: ZoneDef, act: number): void => {
+    void zone;
+    void act;
+    flow.toTitle(game);
+  },
   /** Sidekick AI factory (registered by the Tails module). */
   sidekick: makeSidekick as ActHooks['makeSidekickPad'],
 };
@@ -55,19 +61,7 @@ export const hooks: ActHooks = {
       }
     } else {
       s.checkpoint = null;
-      g.goto(
-        new MessageScene(
-          ['GAME', 'OVER'],
-          (gg) => {
-            gg.onSave(gg);
-            flow.toTitle(gg);
-          },
-          'gameOver',
-          90,
-          600,
-        ),
-        30,
-      );
+      flow.toGameOver(g, act.zone, act.actIndex);
     }
   },
   onCleared(act) {
@@ -108,7 +102,10 @@ export function enterSpecialStage(game: Game): void {
   const charId = team === 'tails' ? 'tails' : team === 'knuckles' ? 'knuckles' : 'sonic';
   game.goto(
     new SpecialStageScene(idx, charId, (g, won, rings) => {
-      if (won) s.emeralds |= 1 << idx;
+      if (won) {
+        s.emeralds |= 1 << idx;
+        s.continues++;
+      }
       if (rings > 0) g.session.addScore(rings * 100);
       g.onSave(g);
       if (zone) g.goto(new Act(g, zone, s.act, hooks), 30);

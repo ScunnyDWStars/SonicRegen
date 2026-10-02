@@ -137,14 +137,10 @@ export function applyMonitor(act: Act, kind: MonitorKind, breaker: Player): void
       if (kind === 'bubble') p.air = 1800;
       break;
     case 'invincible':
-      if (!p.superForm) {
-        p.invincible = 20 * 60;
-        act.game.sound.overrideMusic('invincible');
-      }
+      if (!p.superForm) p.invincible = 20 * 60;
       break;
     case 'shoes':
       p.speedShoes = 20 * 60;
-      act.game.sound.setTempo(1.25);
       break;
     case 'eggman':
       p.hurt(act, p.x - p.facing);

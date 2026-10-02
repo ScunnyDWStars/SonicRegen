@@ -1,24 +1,68 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 interface GameHandle {
-  __game: { scene: { leader?: { x: number; rings: number } }; frame: number };
+  __game: { scene: { leader?: { x: number }; state?: string }; frame: number };
 }
 
-test('boots and Sonic can run', async ({ page }) => {
+function watchErrors(page: Page): string[] {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   page.on('console', (m) => {
-    if (m.type() === 'error' && !m.text().includes('favicon')) errors.push(m.text());
+    if (m.type() === 'error') errors.push(m.text());
   });
-  await page.goto('/?zone=test');
+  return errors;
+}
+
+const leaderX = (page: Page) =>
+  page.evaluate(() => (window as unknown as GameHandle).__game.scene.leader?.x ?? null);
+
+test('title → data select → character select → Palm Coast, and Sonic runs', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('/');
   await page.waitForFunction(() => (window as unknown as GameHandle).__game?.frame > 30);
-  const x0 = await page.evaluate(() => (window as unknown as GameHandle).__game.scene.leader!.x);
-  await page.waitForTimeout(1500);
+  await page.locator('canvas').screenshot({ path: 'test-results/title.png' });
+  await page.keyboard.press('Enter'); // PRESS START
+  await page.waitForTimeout(300);
+  await page.keyboard.press('Enter'); // PLAY
+  await page.waitForTimeout(600);
+  await page.keyboard.press('ArrowLeft'); // NO SAVE
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(600);
+  await page.keyboard.press('Enter'); // Sonic & Tails
+  await page.waitForFunction(() => (window as unknown as GameHandle).__game.scene.state === 'play', null, {
+    timeout: 10_000,
+  });
+  const x0 = (await leaderX(page))!;
   await page.keyboard.down('ArrowRight');
   await page.waitForTimeout(2000);
   await page.keyboard.up('ArrowRight');
-  const x1 = await page.evaluate(() => (window as unknown as GameHandle).__game.scene.leader!.x);
-  expect(x1).toBeGreaterThan(x0 + 200);
-  await page.locator('canvas').screenshot({ path: 'test-results/boot.png' });
-  expect(errors.filter((e) => !e.includes('404'))).toEqual([]);
+  expect((await leaderX(page))!).toBeGreaterThan(x0 + 200);
+  await page.locator('canvas').screenshot({ path: 'test-results/palm-coast.png' });
+  expect(errors).toEqual([]);
+});
+
+test('every zone loads directly', async ({ page }) => {
+  const errors = watchErrors(page);
+  for (const zone of ['palm-coast', 'neon-refinery', 'jungle-isle']) {
+    for (const act of [1, 2]) {
+      await page.goto(`/?zone=${zone}&act=${act}&mute`);
+      await page.waitForFunction(
+        () => (window as unknown as GameHandle).__game?.scene.state === 'play',
+        null,
+        {
+          timeout: 10_000,
+        },
+      );
+      await page.locator('canvas').screenshot({ path: `test-results/${zone}-${act}.png` });
+    }
+  }
+  expect(errors).toEqual([]);
+});
+
+test('special stage renders', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('/?special=3&mute');
+  await page.waitForTimeout(1500);
+  await page.locator('canvas').screenshot({ path: 'test-results/special.png' });
+  expect(errors).toEqual([]);
 });
