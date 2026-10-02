@@ -81,7 +81,7 @@ export class Act implements Scene, PlayerWorld {
     this.camera.setBounds(0, 0, this.level.width, this.level.cameraBottom);
     const s = game.session;
     // Players
-    const start = s.checkpoint ?? s.returnState ?? this.level.start;
+    const start = s.returnState ?? s.checkpoint ?? this.level.start;
     const team = s.team;
     const leaderId: CharId = team === 'tails' ? 'tails' : team === 'knuckles' ? 'knuckles' : 'sonic';
     const leader = new Player(hooks.characterDef(leaderId), start.x, start.y);
@@ -94,7 +94,7 @@ export class Act implements Scene, PlayerWorld {
       this.players.push(tails);
       if (hooks.makeSidekickPad) this.sidekickPads.set(tails, hooks.makeSidekickPad(this, tails));
     }
-    if (s.checkpoint) this.time = s.checkpoint.time;
+    if (s.checkpoint && !s.returnState) this.time = s.checkpoint.time;
     if (s.returnState) {
       leader.rings = s.returnState.rings;
       this.time = s.returnState.time;
@@ -296,6 +296,7 @@ export class Act implements Scene, PlayerWorld {
   }
 
   paused = false;
+  private wasSuper = false;
 
   private terrainWarm(): void {
     this.terrain?.warm(this.leader.x, this.leader.y);
@@ -354,6 +355,11 @@ export class Act implements Scene, PlayerWorld {
     }
     this.flushSpawns();
     this.objects = this.objects.filter((o) => !o.dead);
+    // Super form music follows the leader's state.
+    if (this.leader.superForm !== this.wasSuper) {
+      this.wasSuper = this.leader.superForm;
+      this.game.sound.overrideMusic(this.wasSuper ? 'super' : null);
+    }
     if (!this.leader.dead || this.state === 'clear') cam.update(this.leader);
     if (cam.shake > 0) cam.shake--;
     this.effects.update(this.waterY);

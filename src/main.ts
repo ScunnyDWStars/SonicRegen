@@ -7,6 +7,7 @@ import { startAct } from './game/flow';
 import { Game } from './game/game';
 import type { Team } from './game/session';
 import { CharacterSelect } from './scenes/character-select';
+import { SpecialStageScene } from './scenes/special-stage';
 import { ZONES, zoneById } from './zones/all';
 import './objects';
 
@@ -29,7 +30,14 @@ const game = new Game(sound, placeholder);
 const params = new URLSearchParams(location.search);
 const team = params.get('team') as Team | null;
 const zoneParam = zoneById(params.get('zone') ?? '');
-if (zoneParam || team) {
+if (params.has('special')) {
+  // Jump straight into a special stage: ?special=3
+  game.session.team = team ?? 'sonic';
+  game.goto(
+    new SpecialStageScene(Number(params.get('special')) || 0, 'sonic', (g) => startAct(g, ZONES[0]!, 0)),
+    0,
+  );
+} else if (zoneParam || team) {
   // Direct start for testing: ?zone=palm-coast&act=2&team=knuckles
   game.session.team = team ?? 'sonic';
   startAct(game, zoneParam ?? ZONES[0]!, Number(params.get('act') ?? 1) - 1, 0);

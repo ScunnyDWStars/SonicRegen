@@ -1,5 +1,6 @@
 import { Pad } from '../engine/input';
 import { MessageScene } from '../scenes/message';
+import { SpecialStageScene } from '../scenes/special-stage';
 import { CHARACTERS } from '../player/characters';
 import { makeSidekick } from '../player/sidekick';
 import type { ZoneDef } from '../zones';
@@ -97,6 +98,26 @@ export const hooks: ActHooks = {
     flow.toSpecialStage(g);
   },
 };
+
+/** Enter the special stage for the next missing emerald, then return to the act. */
+export function enterSpecialStage(game: Game): void {
+  const s = game.session;
+  const idx = s.nextSpecialStage;
+  const zone = flow.zones[s.zone];
+  const team = s.team;
+  const charId = team === 'tails' ? 'tails' : team === 'knuckles' ? 'knuckles' : 'sonic';
+  game.goto(
+    new SpecialStageScene(idx, charId, (g, won, rings) => {
+      if (won) s.emeralds |= 1 << idx;
+      if (rings > 0) g.session.addScore(rings * 100);
+      g.onSave(g);
+      if (zone) g.goto(new Act(g, zone, s.act, hooks), 30);
+      else flow.toTitle(g);
+    }),
+    40,
+  );
+}
+flow.toSpecialStage = enterSpecialStage;
 
 export function startAct(game: Game, zone: ZoneDef, actIndex: number, fade = 24): void {
   const zi = flow.zones.indexOf(zone);

@@ -709,3 +709,110 @@ export function buildAnimations(id: CharId, pal: CharPalette): Record<string, An
   }
   return anims;
 }
+
+// ----------------------------------------------------------------------------
+// Back view (special stage)
+// ----------------------------------------------------------------------------
+
+/** Character seen from behind, running into the screen. 48x56, hot-spot at the feet. */
+export function drawBackView(id: CharId, pal: CharPalette, frame: number): PixelImage {
+  const img = new PixelImage(48, 56);
+  img.ox = 24;
+  img.oy = 54;
+  const step = frame & 3;
+  const lift = [0, 3, 0, 3][step]!;
+  const lf = step < 2 ? 1 : -1;
+  // Legs and shoes (alternate steps)
+  for (const s of [-1, 1]) {
+    const up = s === lf ? lift : 0;
+    img.line(24 + s * 4, 38, 24 + s * 5, 48 - up, 3, pal.main);
+    img.ellipse(24 + s * 5, 51 - up, 4.5, 3, up ? pal.shoeDark : pal.shoe);
+    img.rect(24 + s * 5 - 4, 52 - up, 8, 2, WHITE);
+  }
+  if (id === 'tails') {
+    for (const s of [-1, 1]) {
+      const a = frame * 0.6 + (s > 0 ? 1.5 : 0);
+      const ex = 24 + s * 12 + Math.cos(a) * 2,
+        ey = 40 + Math.sin(a) * 3;
+      img.line(24, 36, ex, ey, 6, pal.main);
+      img.circle(ex, ey + 2, 4.5, pal.main);
+      img.circle(ex, ey + 4, 3, pal.skin);
+    }
+  }
+  // Body and arms
+  img.ellipse(24, 32, 8, 9, pal.main);
+  for (const s of [-1, 1]) {
+    const sw = s === lf ? -3 : 3;
+    img.line(24 + s * 7, 28, 24 + s * 11, 34 + sw, 2, pal.skin);
+    img.circle(24 + s * 11, 35 + sw, 2.8, pal.glove);
+  }
+  // Head with quills / ears / dreads, seen from behind
+  if (id === 'sonic') {
+    for (const [dx, dy, w] of [
+      [-10, 18, 5],
+      [10, 18, 5],
+      [-6, 26, 5],
+      [6, 26, 5],
+      [0, 28, 6],
+    ] as const)
+      img.poly(
+        [
+          [24 + dx * 0.4 - w, 14],
+          [24 + dx, 14 + dy],
+          [24 + dx * 0.4 + w, 14],
+        ],
+        pal.main,
+      );
+    img.circle(24, 13, 10, pal.main);
+    img.poly(
+      [
+        [16, 8],
+        [14, 0],
+        [21, 4],
+      ],
+      pal.main,
+    );
+    img.poly(
+      [
+        [32, 8],
+        [34, 0],
+        [27, 4],
+      ],
+      pal.main,
+    );
+    img.ellipse(21, 9, 4, 3, pal.mainLight);
+  } else if (id === 'tails') {
+    img.circle(24, 14, 9, pal.main);
+    img.poly(
+      [
+        [15, 10],
+        [13, -1],
+        [21, 6],
+      ],
+      pal.main,
+    );
+    img.poly(
+      [
+        [33, 10],
+        [35, -1],
+        [27, 6],
+      ],
+      pal.main,
+    );
+    img.ellipse(21, 10, 4, 3, pal.mainLight);
+  } else {
+    for (const dx of [-9, -3, 3, 9])
+      img.poly(
+        [
+          [24 + dx - 4, 14],
+          [24 + dx * 1.3, 34],
+          [24 + dx + 4, 14],
+        ],
+        dx === -3 || dx === 3 ? pal.mainDark : pal.main,
+      );
+    img.circle(24, 13, 10, pal.main);
+    img.ellipse(21, 9, 4, 3, pal.mainLight);
+  }
+  img.outline(pal.outline);
+  return img;
+}
